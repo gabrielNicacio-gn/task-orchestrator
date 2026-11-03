@@ -1,8 +1,8 @@
 package com.api.task_orchestrator.models;
 
 public enum TaskPriority {
-    BAIXA,
+    LOW,
     NORMAL,
-    ALTA,
-    URGENTE
+    HIGH,
+    URGENT
 }

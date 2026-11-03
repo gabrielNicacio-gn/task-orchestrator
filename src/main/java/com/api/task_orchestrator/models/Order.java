@@ -27,17 +27,17 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "order")
+@Table(name = "customer_order")
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, updatable = false)
-    private UUID idOrder;
+    private UUID id;
 
-    @Column(name = "numero_pedido", nullable = false, unique = true, length = 64)
+    @Column(name = "order_number", nullable = false, unique = true, length = 64)
     private String orderNumber;
 
-    @Column(name = "data_pedido", nullable = false)
+    @Column(name = "order_date", nullable = false)
     private OffsetDateTime orderDate;
 
     @Enumerated(EnumType.STRING)
@@ -45,15 +45,15 @@ public class Order {
     private OrderStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "operacao_id", nullable = false)
+    @JoinColumn(name = "operation_id", nullable = false)
     private Operation operation;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.PERSIST)
-    private List<Tasks> tasks = new ArrayList<>();
+    private List<Task> tasks = new ArrayList<>();
 
     @PrePersist
     private void applyDefaults() {
         if (status == null)
-            status = OrderStatus.PENDENTE;
+            status = OrderStatus.PENDING;
     }
 }

@@ -1,50 +1,46 @@
--- Esquema inicial do orquestrador para PostgreSQL.
--- Regras como limite de pedidos por operação e transições de estado devem ser
--- validadas também pela camada de serviço, dentro de transações.
-
 CREATE TABLE operation (
     id UUID PRIMARY KEY,
-    descricao VARCHAR(255) NOT NULL,
-    capacidade_pedidos INTEGER NOT NULL CHECK (capacidade_pedidos > 0),
-    criado_em TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    prazo TIMESTAMPTZ NOT NULL,
-    status VARCHAR(24) NOT NULL DEFAULT 'CRIADA'
-        CHECK (status IN ('CRIADA', 'RECEBENDO_PEDIDOS', 'EM_ANDAMENTO', 'CONCLUIDA', 'CANCELADA'))
+    description VARCHAR(255) NOT NULL,
+    order_capacity INTEGER NOT NULL CHECK (order_capacity > 0),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deadline TIMESTAMPTZ NOT NULL,
+    status VARCHAR(24) NOT NULL DEFAULT 'CREATED'
+        CHECK (status IN ('CREATED', 'ACCEPTING_ORDERS', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'))
 );
 
-CREATE TABLE order (
+CREATE TABLE customer_order (
     id UUID PRIMARY KEY,
-    numero_pedido VARCHAR(64) NOT NULL UNIQUE,
-    data_pedido TIMESTAMPTZ NOT NULL,
-    operacao_id UUID NOT NULL REFERENCES operacao (id) ON DELETE RESTRICT,
-    status VARCHAR(24) NOT NULL DEFAULT 'PENDENTE'
-        CHECK (status IN ('PENDENTE', 'EM_ANDAMENTO', 'CONCLUIDO', 'CANCELADO'))
+    order_number VARCHAR(64) NOT NULL UNIQUE,
+    order_date TIMESTAMPTZ NOT NULL,
+    operation_id UUID NOT NULL REFERENCES operation (id) ON DELETE RESTRICT,
+    status VARCHAR(24) NOT NULL DEFAULT 'PENDING'
+        CHECK (status IN ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'))
 );
 
-CREATE INDEX idx_order_operation ON pedido (operacao_id);
+CREATE INDEX idx_customer_order_operation ON customer_order (operation_id);
 
 CREATE TABLE task (
     id UUID PRIMARY KEY,
-    numero_tarefa VARCHAR(64) NOT NULL UNIQUE,
-    pedido_id UUID NOT NULL REFERENCES pedido (id) ON DELETE RESTRICT,
-    fase VARCHAR(24) NOT NULL
-        CHECK (fase IN ('SEPARACAO', 'CONFERENCIA', 'EMBALAGEM', 'ENTREGA')),
-    status VARCHAR(24) NOT NULL DEFAULT 'PENDENTE'
-        CHECK (status IN ('PENDENTE', 'DISPONIVEL', 'EM_EXECUCAO', 'CONCLUIDA', 'CANCELADA')),
-    prioridade VARCHAR(24) NOT NULL DEFAULT 'NORMAL'
-        CHECK (prioridade IN ('BAIXA', 'NORMAL', 'ALTA', 'URGENTE')),
-    criado_em TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    prazo TIMESTAMPTZ,
-    depende_de_tarefa_id UUID REFERENCES tarefa (id) ON DELETE RESTRICT,
+    task_number VARCHAR(64) NOT NULL UNIQUE,
+    order_id UUID NOT NULL REFERENCES customer_order (id) ON DELETE RESTRICT,
+    phase VARCHAR(24) NOT NULL
+        CHECK (phase IN ('PICKING', 'INSPECTION', 'PACKING', 'DELIVERY')),
+    status VARCHAR(24) NOT NULL DEFAULT 'PENDING'
+        CHECK (status IN ('PENDING', 'AVAILABLE', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED')),
+    priority VARCHAR(24) NOT NULL DEFAULT 'NORMAL'
+        CHECK (priority IN ('LOW', 'NORMAL', 'HIGH', 'URGENT')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deadline TIMESTAMPTZ,
+    depends_on_task_id UUID REFERENCES task (id) ON DELETE RESTRICT,
 
-    CONSTRAINT uq_tarefa_pedido_fase UNIQUE (pedido_id, fase),
-    CONSTRAINT uq_tarefa_id_pedido UNIQUE (id, pedido_id),
-    CONSTRAINT fk_tarefa_dependencia_mesmo_pedido
-        FOREIGN KEY (depende_de_tarefa_id, pedido_id)
-        REFERENCES tarefa (id, pedido_id) ON DELETE RESTRICT,
-    CONSTRAINT ck_tarefa_nao_depende_de_si
-        CHECK (depende_de_tarefa_id IS NULL OR depende_de_tarefa_id <> id)
+    CONSTRAINT uq_task_order_phase UNIQUE (order_id, phase),
+    CONSTRAINT uq_task_id_order UNIQUE (id, order_id),
+    CONSTRAINT fk_task_dependency_same_order
+        FOREIGN KEY (depends_on_task_id, order_id)
+        REFERENCES task (id, order_id) ON DELETE RESTRICT,
+    CONSTRAINT ck_task_not_self_dependent
+        CHECK (depends_on_task_id IS NULL OR depends_on_task_id <> id)
 );
 
-CREATE INDEX idx_tarefa_status_prioridade_prazo
-    ON tarefa (status, prioridade, prazo);
+CREATE INDEX idx_task_status_priority_deadline
+    ON task (status, priority, deadline);

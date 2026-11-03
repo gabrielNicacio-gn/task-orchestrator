@@ -25,19 +25,19 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "task", uniqueConstraints = {
-        @UniqueConstraint(name = "uq_tarefa_pedido_fase", columnNames = { "pedido_id", "fase" })
+        @UniqueConstraint(name = "uq_task_order_phase", columnNames = { "order_id", "phase" })
 })
-public class Tasks {
+public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, updatable = false)
-    private UUID idTask;
+    private UUID id;
 
-    @Column(name = "numero_tarefa", nullable = false, unique = true, length = 64)
+    @Column(name = "task_number", nullable = false, unique = true, length = 64)
     private String taskNumber;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "fase", nullable = false, length = 24)
+    @Column(name = "phase", nullable = false, length = 24)
     private TaskPhase phase;
 
     @Enumerated(EnumType.STRING)
@@ -45,29 +45,29 @@ public class Tasks {
     private TaskStatus status;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "prioridade", nullable = false, length = 24)
+    @Column(name = "priority", nullable = false, length = 24)
     private TaskPriority priority;
 
-    @Column(name = "criado_em", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name = "prazo")
+    @Column(name = "deadline")
     private OffsetDateTime deadline;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "pedido_id", nullable = false)
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "depende_de_tarefa_id")
-    private Tasks dependsOn;
+    @JoinColumn(name = "depends_on_task_id")
+    private Task dependsOn;
 
     @PrePersist
     private void applyDefaults() {
         if (createdAt == null)
             createdAt = OffsetDateTime.now();
         if (status == null)
-            status = TaskStatus.PENDENTE;
+            status = TaskStatus.PENDING;
         if (priority == null)
             priority = TaskPriority.NORMAL;
     }
