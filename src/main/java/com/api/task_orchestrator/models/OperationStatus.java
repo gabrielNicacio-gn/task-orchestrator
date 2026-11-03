@@ -1,9 +1,9 @@
 package com.api.task_orchestrator.models;
 
 public enum OperationStatus {
-    CRIADA,
-    RECEBENDO_PEDIDOS,
-    EM_ANDAMENTO,
-    CONCLUIDA,
-    CANCELADA
+    CREATED,
+    ACCEPTING_ORDERS,
+    IN_PROGRESS,
+    COMPLETED,
+    CANCELLED
 }

@@ -31,16 +31,16 @@ public class Operation {
     @Column(name = "id", nullable = false, updatable = false)
     private UUID idOperation;
 
-    @Column(name = "descricao", nullable = false, length = 255)
+    @Column(name = "description", nullable = false, length = 255)
     private String description;
 
-    @Column(name = "capacidade_pedidos", nullable = false)
+    @Column(name = "order_capacity", nullable = false)
     private int orderCapacity;
 
-    @Column(name = "criado_em", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name = "prazo", nullable = false)
+    @Column(name = "deadline", nullable = false)
     private OffsetDateTime deadline;
 
     @Enumerated(EnumType.STRING)
@@ -55,6 +55,6 @@ public class Operation {
         if (createdAt == null)
             createdAt = OffsetDateTime.now();
         if (status == null)
-            status = OperationStatus.CRIADA;
+            status = OperationStatus.CREATED;
     }
 }
