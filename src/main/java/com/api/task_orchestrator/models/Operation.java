@@ -31,7 +31,7 @@ public class Operation {
     @Column(name = "id", nullable = false, updatable = false)
     private UUID idOperation;
 
-    @Column(name = "description", nullable = false, length = 255)
+    @Column(name = "description", nullable = true, length = 255)
     private String description;
 
     @Column(name = "order_capacity", nullable = false)
@@ -56,5 +56,7 @@ public class Operation {
             createdAt = OffsetDateTime.now();
         if (status == null)
             status = OperationStatus.CREATED;
+        if (description == null)
+            description = "";
     }
 }
