@@ -10,11 +10,12 @@ CREATE TABLE operation (
 
 CREATE TABLE customer_order (
     id UUID PRIMARY KEY,
-    order_number VARCHAR(64) NOT NULL UNIQUE,
+    order_number VARCHAR(64) NOT NULL,
     order_date TIMESTAMPTZ NOT NULL,
     operation_id UUID NOT NULL REFERENCES operation (id) ON DELETE RESTRICT,
     status VARCHAR(24) NOT NULL DEFAULT 'PENDING'
-        CHECK (status IN ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'))
+        CHECK (status IN ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED')),
+    CONSTRAINT uq_customer_order_operation_number UNIQUE (operation_id, order_number)
 );
 
 CREATE INDEX idx_customer_order_operation ON customer_order (operation_id);
