@@ -8,5 +8,4 @@ public class TaskOrchestratorApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(TaskOrchestratorApplication.class, args);
 	}
-
 }
